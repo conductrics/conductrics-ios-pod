@@ -8,12 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		8838638724897D9600815076 /* Conductrics.h in Headers */ = {isa = PBXBuildFile; fileRef = 8838638524897D9600815076 /* Conductrics.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8838638E248981E100815076 /* Conductrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8838638D248981E100815076 /* Conductrics.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		8838638224897D9600815076 /* Conductrics.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Conductrics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8838638524897D9600815076 /* Conductrics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Conductrics.h; sourceTree = "<group>"; };
 		8838638624897D9600815076 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8838638D248981E100815076 /* Conductrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conductrics.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,6 +48,7 @@
 		8838638424897D9600815076 /* Conductrics */ = {
 			isa = PBXGroup;
 			children = (
+				8838638D248981E100815076 /* Conductrics.swift */,
 				8838638524897D9600815076 /* Conductrics.h */,
 				8838638624897D9600815076 /* Info.plist */,
 			);
@@ -95,6 +98,7 @@
 				TargetAttributes = {
 					8838638124897D9600815076 = {
 						CreatedOnToolsVersion = 11.3.1;
+						LastSwiftMigration = 1130;
 					};
 				};
 			};
@@ -131,6 +135,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8838638E248981E100815076 /* Conductrics.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,6 +265,7 @@
 		8838638B24897D9600815076 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -275,6 +281,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.conductrics.Conductrics;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -283,6 +290,7 @@
 		8838638C24897D9600815076 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
