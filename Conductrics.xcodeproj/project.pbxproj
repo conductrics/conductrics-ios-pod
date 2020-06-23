@@ -9,13 +9,28 @@
 /* Begin PBXBuildFile section */
 		8838638724897D9600815076 /* Conductrics.h in Headers */ = {isa = PBXBuildFile; fileRef = 8838638524897D9600815076 /* Conductrics.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8838638E248981E100815076 /* Conductrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8838638D248981E100815076 /* Conductrics.swift */; };
+		883A881624A100CA00555813 /* ConductricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 883A881524A100CA00555813 /* ConductricsTests.swift */; };
+		883A881824A100CA00555813 /* Conductrics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8838638224897D9600815076 /* Conductrics.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		883A881924A100CA00555813 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8838637924897D9600815076 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8838638124897D9600815076;
+			remoteInfo = Conductrics;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		8838638224897D9600815076 /* Conductrics.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Conductrics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8838638524897D9600815076 /* Conductrics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Conductrics.h; sourceTree = "<group>"; };
 		8838638624897D9600815076 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8838638D248981E100815076 /* Conductrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conductrics.swift; sourceTree = "<group>"; };
+		883A881324A100CA00555813 /* ConductricsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ConductricsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		883A881524A100CA00555813 /* ConductricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConductricsTests.swift; sourceTree = "<group>"; };
+		883A881724A100CA00555813 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -26,6 +41,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		883A881024A100CA00555813 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				883A881824A100CA00555813 /* Conductrics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				8838638424897D9600815076 /* Conductrics */,
+				883A881424A100CA00555813 /* ConductricsTests */,
 				8838638324897D9600815076 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				8838638224897D9600815076 /* Conductrics.framework */,
+				883A881324A100CA00555813 /* ConductricsTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -53,6 +78,15 @@
 				8838638624897D9600815076 /* Info.plist */,
 			);
 			path = Conductrics;
+			sourceTree = "<group>";
+		};
+		883A881424A100CA00555813 /* ConductricsTests */ = {
+			isa = PBXGroup;
+			children = (
+				883A881524A100CA00555813 /* ConductricsTests.swift */,
+				883A881724A100CA00555813 /* Info.plist */,
+			);
+			path = ConductricsTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -87,18 +121,40 @@
 			productReference = 8838638224897D9600815076 /* Conductrics.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		883A881224A100CA00555813 /* ConductricsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 883A881D24A100CA00555813 /* Build configuration list for PBXNativeTarget "ConductricsTests" */;
+			buildPhases = (
+				883A880F24A100CA00555813 /* Sources */,
+				883A881024A100CA00555813 /* Frameworks */,
+				883A881124A100CA00555813 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				883A881A24A100CA00555813 /* PBXTargetDependency */,
+			);
+			name = ConductricsTests;
+			productName = ConductricsTests;
+			productReference = 883A881324A100CA00555813 /* ConductricsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		8838637924897D9600815076 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1150;
 				LastUpgradeCheck = 1130;
 				ORGANIZATIONNAME = Conductrics;
 				TargetAttributes = {
 					8838638124897D9600815076 = {
 						CreatedOnToolsVersion = 11.3.1;
 						LastSwiftMigration = 1130;
+					};
+					883A881224A100CA00555813 = {
+						CreatedOnToolsVersion = 11.5;
 					};
 				};
 			};
@@ -116,12 +172,20 @@
 			projectRoot = "";
 			targets = (
 				8838638124897D9600815076 /* Conductrics */,
+				883A881224A100CA00555813 /* ConductricsTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		8838638024897D9600815076 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		883A881124A100CA00555813 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -139,7 +203,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		883A880F24A100CA00555813 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				883A881624A100CA00555813 /* ConductricsTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		883A881A24A100CA00555813 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8838638124897D9600815076 /* Conductrics */;
+			targetProxy = 883A881924A100CA00555813 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		8838638824897D9600815076 /* Debug */ = {
@@ -311,6 +391,42 @@
 			};
 			name = Release;
 		};
+		883A881B24A100CA00555813 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = ConductricsTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.conductrics.ConductricsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		883A881C24A100CA00555813 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = ConductricsTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.conductrics.ConductricsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -328,6 +444,15 @@
 			buildConfigurations = (
 				8838638B24897D9600815076 /* Debug */,
 				8838638C24897D9600815076 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		883A881D24A100CA00555813 /* Build configuration list for PBXNativeTarget "ConductricsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				883A881B24A100CA00555813 /* Debug */,
+				883A881C24A100CA00555813 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
