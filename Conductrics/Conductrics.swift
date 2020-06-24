@@ -9,7 +9,7 @@
 import Foundation
 
 public class Conductrics {
-    
+
     public enum Status : String {
         case Unknown
         case Provisional
@@ -27,7 +27,7 @@ public class Conductrics {
         case Bot
     }
     public enum SelectError : Error {
-        case Forced
+        case Offline
         case Timeout
         case InvalidAgent
     }
@@ -35,16 +35,17 @@ public class Conductrics {
         case Server(message: String)
         case BadStatus(code: uint)
         case Unknown(message: String)
+        case Offline
     }
-    
+
     private var apiUrl : String;
     private var apiKey : String;
-    
+
     public init( apiUrl : String, apiKey : String ) {
         self.apiKey = apiKey;
         self.apiUrl = apiUrl;
     }
-    
+
     public class RequestOptions {
         public init( _ sessionID : String?) {
             if let s = sessionID {
@@ -59,55 +60,64 @@ public class Conductrics {
             session = sessionId;
             return self;
         }
-        
+
         private var provisional : Bool = false;
         public func getProvisional() -> Bool { return provisional; }
-        public func setProvisional( value : Bool ) -> RequestOptions {
+        public func setProvisional( _ value : Bool ) -> RequestOptions {
             provisional = value;
             if( value ) {
                 shouldConfirm = false;
             }
             return self;
         }
-        
+
         private var shouldConfirm : Bool = false;
         public func getConfirm() -> Bool { return shouldConfirm; }
-        public func setConfirm( value : Bool ) -> RequestOptions {
+        public func setConfirm( _ value : Bool ) -> RequestOptions {
             shouldConfirm = value;
             if( value ) {
                 provisional = false;
             }
             return self;
         }
-        
+
         private var ua : String = "Swift SDK";
         public func getUserAgent() -> String { return self.ua; }
-        public func setUserAgent( ua : String ) -> RequestOptions {
+        public func setUserAgent( _ ua : String ) -> RequestOptions {
             self.ua = ua;
             return self;
         }
-        
+
         private var timeout : Int32 = 1000;
         public func getTimeout()  -> Int32 { return timeout; }
-        public func setTimeout( timeout : Int32 ) ->  RequestOptions {
-            self.timeout = timeout;
+        public func setTimeout( ms : Int32 ) ->  RequestOptions {
+            self.timeout = ms;
             return self;
         }
-        
+
         private var defaultOptions = [String:String]();
         public func getDefault( _ agentCode : String ) -> String { return self.defaultOptions[agentCode] ?? "A"; }
         public func setDefault( _ agentCode : String, _ variant : String ) -> RequestOptions {
             self.defaultOptions[agentCode] = variant;
             return self;
         }
-        
-        private var forcedOutcomes = [String:String]();
-        public func getForcedOutcome( _ agentCode : String) -> String? { return self.forcedOutcomes[agentCode]; }
-        public func forceOutcome( _ agentCode : String, _ variant : String ) -> RequestOptions {
-            self.forcedOutcomes[agentCode] = variant;
+
+        private var offline = false;
+        public func getOffline() -> Bool { return offline; }
+        public func setOffline( _ value : Bool) -> RequestOptions {
+            offline = value;
             return self;
         }
-        
+
+        private var allowed = [String:[String]]();
+        public func setAllowedVariants( _ agentCode : String, variants: [String]) -> RequestOptions {
+            allowed[agentCode] = variants;
+            return self
+        }
+        public func getAllowedVariants( _ agentCode : String) -> [String]? {
+            return allowed[agentCode];
+        }
+
         private var input = [String:String]();
         public func getInputs() -> [String:String] { return input; }
         public func setInput( _ key : String, _ value : String ) -> RequestOptions {
@@ -126,7 +136,7 @@ public class Conductrics {
             input[key] = String(value);
             return self;
         }
-        
+
         private var params = [String:String]();
         public func getParams() -> [String:String] {
             return params;
@@ -135,7 +145,7 @@ public class Conductrics {
             params[key] = value;
             return self;
         }
-        
+
         private var traits : Set<String> = Set<String>();
         public func getTraits() -> Set<String> {
             return traits;
@@ -144,7 +154,7 @@ public class Conductrics {
             self.traits.insert( group + ":" + value );
             return self;
         }
-        
+
     }
 
     private func APIPOST( _ opts : RequestOptions, _ body : String, _ callback: @escaping (String) -> Void ) {
@@ -197,7 +207,7 @@ public class Conductrics {
             }
         }
     }
-    
+
     public class ExecResponse {
         private var sels : [String:SelectResponse] = [String:SelectResponse]();
         private var rewards : [String:GoalResponse] = [String:GoalResponse]();
@@ -267,17 +277,16 @@ public class Conductrics {
             if self.err == nil {
                 self.err = err;
             }
-            debugPrint("ExecResponse.setError", err);
         }
         public func getError() -> Error? { return self.err; }
-        
+
         public func getLog() -> [String]? {
             if let data = fullResponse?["data"] as? [String:Any] {
                 return data["log"] as? [String];
             }
             return nil;
         }
-        
+
         public func getSelection( _ agentCode : String ) -> SelectResponse {
             if let sel = sels[agentCode] {
                 return sel;
@@ -299,24 +308,28 @@ public class Conductrics {
         }
     }
     public func exec( _ opts : RequestOptions, _ commands: [[String:Any]], _ callback : @escaping (ExecResponse) -> Void ) {
-        do {
-            var root = [String:Any]();
-            root["commands"] = commands;
-            let inputs = opts.getInputs()
-            if inputs.count > 0 {
-                root["inputs"] = inputs;
+        if opts.getOffline() {
+            callback(ExecResponse(opts, json:nil, err:ExecError.Offline));
+        } else {
+            do {
+                var root = [String:Any]();
+                root["commands"] = commands;
+                let inputs = opts.getInputs()
+                if inputs.count > 0 {
+                    root["inputs"] = inputs;
+                }
+                let data : Data = try JSONSerialization.data(withJSONObject: root, options: [])
+                let body : String = String(data:data, encoding: .utf8) ?? "{}"
+                APIPOST( opts, body, { resp_body in
+                    callback(ExecResponse(opts, json:resp_body, err:nil));
+                });
+            } catch {
+                debugPrint("caught error in exec()", error);
+                callback(ExecResponse(opts, json:nil, err:error));
             }
-            let data : Data = try JSONSerialization.data(withJSONObject: root, options: [])
-            let body : String = String(data:data, encoding: .utf8) ?? "{}"
-            APIPOST( opts, body, { resp_body in
-                callback(ExecResponse(opts, json:resp_body, err:nil));
-            });
-        } catch {
-            debugPrint("caught error in exec()", error);
-            callback(ExecResponse(opts, json:nil, err:error));
         }
     }
-    
+
     public class SelectResponse {
         private var agentCode : String = "unknown";
         private var optionCode : String = "A";
@@ -370,7 +383,7 @@ public class Conductrics {
             error = err;
             self.parent = parent;
         }
-        public func getMeta(key : String) -> String? { return metadata[key]; }
+        public func getMeta(_ key : String) -> String? { return metadata[key]; }
         public func getAgent() -> String { return agentCode; }
         public func getCode() -> String { return optionCode; }
         public func getPolicy() -> Policy { return policy; }
@@ -382,16 +395,20 @@ public class Conductrics {
     }
     public func select( _ opts : RequestOptions, _ agentCode : String, _ callback : @escaping (SelectResponse) -> Void ) {
         var commands = [[String:Any]]();
-        var command =  ["a": agentCode];
-        if let forced = opts.getForcedOutcome(agentCode) {
-            callback(SelectResponse(agentCode, forced, Policy.None,
-                                    err: SelectError.Forced, parent: nil));
+        var command : [String:Any] =  ["a": agentCode];
+        if opts.getOffline() {
+            callback(SelectResponse(agentCode, opts.getDefault(agentCode), Policy.None,
+                                    err: SelectError.Offline,
+                                    parent: nil))
             return;
         }
         if( opts.getProvisional() ) {
             command["s"] = "p";
         } else if( opts.getConfirm() ) {
             command["s"] = "ok";
+        }
+        if let allowed = opts.getAllowedVariants(agentCode) {
+            command["c"] = allowed;
         }
         commands.append(command);
         exec( opts, commands, { response in
@@ -403,28 +420,39 @@ public class Conductrics {
         var commands = [[String:Any]]();
         var ret = [String:SelectResponse]()
         for agent in agents {
-            var command = [ "a": agent ]
-            if( opts.getProvisional() ) {
-                command["s"] = "p";
-            } else if( opts.getConfirm() ) {
-                command["s"] = "ok";
-            }
-            if let forced = opts.getForcedOutcome(agent) {
-                ret[agent] = SelectResponse(agent, forced, Policy.None, err: SelectError.Forced, parent:nil)
+            if opts.getOffline() {
+                ret[agent] = SelectResponse(agent, opts.getDefault(agent), Policy.None, err: SelectError.Offline, parent:nil);
             } else {
+                var command = [ "a": agent ]
+                if( opts.getProvisional() ) {
+                    command["s"] = "p";
+                } else if( opts.getConfirm() ) {
+                    command["s"] = "ok";
+                }
+                /*
+                if let forced = opts.getForcedOutcome(agent) {
+                    ret[agent] = SelectResponse(agent, forced, Policy.None, err: SelectError.Forced, parent:nil)
+                } else {
+                    commands.append(command)
+                }
+                */
                 commands.append(command)
             }
         }
-        exec( opts, commands, { response in
-            for agent in agents {
-                if ret[agent] == nil {
-                    ret[agent] = response.getSelection(agent)
+        if opts.getOffline() {
+            callback(ret)
+        } else {
+            exec( opts, commands, { response in
+                for agent in agents {
+                    if ret[agent] == nil {
+                        ret[agent] = response.getSelection(agent)
+                    }
                 }
-            }
-            callback(ret);
-        })
+                callback(ret);
+            })
+        }
     }
-    
+
     public class GoalResponse {
         private var goal : String = "none";
         private var accepted : [String:Double] = [String:Double]();
@@ -440,10 +468,12 @@ public class Conductrics {
             jsonObject = json;
             if let g = json["g"] as? String {
                 self.goal = g;
-                if let rs = json["rs"] as? [[String:Double]] {
+                if let rs = json["rs"] as? [[String:Any]] {
                     for item in rs {
-                        for (agentCode, value) in item {
-                            self.accepted[agentCode] = value;
+                        if let agentCode = item["a"] as? String {
+                            if let acceptedValue = item["v"] as? Double {
+                                accepted[agentCode] = acceptedValue;
+                            }
                         }
                     }
                 }
@@ -456,10 +486,17 @@ public class Conductrics {
         public func getJSON() -> [String:Any]? { return jsonObject; }
         public func getExecResponse() -> ExecResponse? { return parent; }
     }
-    public func reward( opts : RequestOptions, goalCode: String, value: Double, callback: @escaping (GoalResponse) -> Void ) {
-        let commands : [[String:Any]] = [ ["g": goalCode, "v": 1.0] ];
-        exec( opts, commands, { response in
-            callback(response.getReward(goalCode));
-        })
+    public func reward( _ opts : RequestOptions, _ goalCode: String, value: Double, _ callback: @escaping (GoalResponse) -> Void ) {
+        if opts.getOffline() {
+            callback(GoalResponse(goalCode, parent: nil));
+        } else {
+            let commands : [[String:Any]] = [ ["g": goalCode, "v": 1.0] ];
+            exec( opts, commands, { response in
+                callback(response.getReward(goalCode));
+            })
+        }
+    }
+    public func reward( _ opts : RequestOptions, _ goalCode: String, _ callback: @escaping (GoalResponse) -> Void ) {
+        self.reward(opts, goalCode, value: 1.0, callback);
     }
 }

@@ -20,7 +20,7 @@ class ConductricsTests: XCTestCase {
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
-    
+
     func debugJSON(_ json : [String:Any]?) -> String {
         if let json = json {
             do {
@@ -33,10 +33,11 @@ class ConductricsTests: XCTestCase {
             return "nil";
         }
     }
+
     func Lock() -> DispatchSemaphore {
         return DispatchSemaphore(value: 0)
     }
-    
+
     func assertListContains( value: String, list:[String]) {
         var match = false;
         for line in list {
@@ -47,7 +48,7 @@ class ConductricsTests: XCTestCase {
         }
         XCTAssertEqual(match, true);
     }
-    
+
     func testBasicSession() throws {
         let opts = Conductrics.RequestOptions(nil)
         let lock = Lock()
@@ -76,7 +77,7 @@ class ConductricsTests: XCTestCase {
         })
         lock.wait()
     }
-    
+
     func testTraits() throws {
         let opts = Conductrics.RequestOptions(nil)
             .setTrait("F","1")
@@ -93,7 +94,7 @@ class ConductricsTests: XCTestCase {
         })
         lock.wait()
     }
-    
+
     func testParams() throws {
         let opts = Conductrics.RequestOptions(nil)
             .setParam("debug", "true")
@@ -119,23 +120,10 @@ class ConductricsTests: XCTestCase {
         })
         lock.wait()
     }
-    
-    func testForceOutcome() throws {
-        let opts = Conductrics.RequestOptions(nil)
-            .forceOutcome("a-example", "Z");
-        let lock = Lock()
-        api.select(opts, "a-example", { response in
-            XCTAssertEqual(response.getAgent(), "a-example")
-            XCTAssertEqual(response.getCode(), "Z")
-            XCTAssertEqual(response.getPolicy(), Conductrics.Policy.None)
-            lock.signal()
-        })
-        lock.wait()
-    }
-    
+
     func testUserAgent() throws {
         let opts = Conductrics.RequestOptions(nil)
-            .setUserAgent(ua: "MAGIC STRING")
+            .setUserAgent("MAGIC STRING")
             .setParam("debug", "true");
         let lock = Lock()
         api.select(opts, "a-example", { response in
@@ -147,7 +135,7 @@ class ConductricsTests: XCTestCase {
         })
         lock.wait()
     }
-    
+
     func testSetInput() throws {
         let opts = Conductrics.RequestOptions(nil)
             .setInput("foo", "bar");
@@ -160,10 +148,76 @@ class ConductricsTests: XCTestCase {
         })
         lock.wait()
     }
-    
+
+    func testOfflineSelect() throws {
+        let opts = Conductrics.RequestOptions(nil)
+            .setDefault("a-example", "Z")
+            .setOffline(true);
+        let lock = Lock()
+        api.select(opts, "a-example", { response in
+            XCTAssertEqual(response.getAgent(), "a-example")
+            XCTAssertEqual(response.getPolicy(), Conductrics.Policy.None)
+            XCTAssertEqual(response.getCode(), "Z")
+            lock.signal()
+        })
+        lock.wait()
+    }
+
+    func testOfflineExec() throws {
+        let opts = Conductrics.RequestOptions(nil)
+            .setOffline(true);
+        let lock = Lock()
+        api.exec(opts, [], { response in
+            XCTAssert(response.getJSON() == nil, "Offline exec should not have JSON")
+            lock.signal()
+        })
+        lock.wait()
+    }
+
+    func testOfflineReward() throws {
+        let opts = Conductrics.RequestOptions(nil)
+            .setOffline(true);
+        let lock = Lock()
+        api.select(opts, "a-example", { response in
+            self.api.reward(opts, "g-example", value:1.0, { response in
+                XCTAssertEqual(response.getGoalCode(), "g-example")
+                XCTAssertEqual(response.getAcceptedValue(agentCode: "a-example"), 0.0)
+                lock.signal()
+            })
+        })
+        lock.wait()
+    }
+
+    func testReward() throws {
+        let opts = Conductrics.RequestOptions(nil)
+        let lock = Lock()
+        api.select(opts, "a-example", { response in
+            self.api.reward(opts, "g-example", value:1.0, { response in
+                debugPrint("getJSON", response.getJSON() as Any)
+                XCTAssertEqual(response.getGoalCode(), "g-example")
+                XCTAssertEqual(response.getAcceptedValue(agentCode: "a-example"), 1.0)
+                lock.signal()
+            })
+        })
+        lock.wait()
+    }
+
+    func testAllowedVariants() throws {
+        let opts = Conductrics.RequestOptions(nil)
+            .setAllowedVariants("a-example", variants: ["B"])
+        let lock = Lock()
+        api.select(opts, "a-example", { response in
+            XCTAssertEqual(response.getAgent(), "a-example")
+            XCTAssertEqual(response.getPolicy(), Conductrics.Policy.Random)
+            XCTAssertEqual(response.getCode(), "B")
+            lock.signal()
+        })
+        lock.wait()
+    }
+
     func testSetTimeout() throws {
         let opts = Conductrics.RequestOptions(nil)
-            .setTimeout(timeout:1)
+            .setTimeout(ms:1)
             .setDefault("a-example", "Z")
         let lock = Lock()
         api.select(opts, "a-example", { response in
@@ -174,7 +228,7 @@ class ConductricsTests: XCTestCase {
         })
         lock.wait()
     }
-    
+
     func testSelectMultipleWithDefault() throws {
         let opts = Conductrics.RequestOptions(nil)
             .setDefault("a-invalid", "Z");
@@ -189,6 +243,8 @@ class ConductricsTests: XCTestCase {
                         XCTAssertEqual(response.getCode(), "Z");
                         XCTAssertEqual(response.getPolicy(), Conductrics.Policy.None)
                     } else if agent == "a-example" {
+                        let variant = response.getCode()
+                        XCTAssert(variant == "A" || variant == "B", "Variant must be A or B.")
                         XCTAssertEqual(response.getPolicy(), Conductrics.Policy.Random)
                     }
                 }
@@ -197,10 +253,11 @@ class ConductricsTests: XCTestCase {
         })
         lock.wait()
     }
-    
-    func testSelectMultipleWithForced() throws {
+
+    func testSelectMultipleOffline() throws {
         let opts = Conductrics.RequestOptions(nil)
-            .forceOutcome("a-example", "Z");
+            .setOffline(true)
+            .setDefault("a-invalid", "Z");
         let lock = Lock()
         let agents = [ "a-example", "a-invalid" ]
         api.select(opts, agents, { map in
@@ -209,10 +266,10 @@ class ConductricsTests: XCTestCase {
                 XCTAssertNotNil(response, "Agent: "+agent+" should not have nil response")
                 if let response = response {
                     if agent == "a-invalid" {
-                        XCTAssertEqual(response.getCode(), "A");
+                        XCTAssertEqual(response.getCode(), "Z");
                         XCTAssertEqual(response.getPolicy(), Conductrics.Policy.None)
                     } else if agent == "a-example" {
-                        XCTAssertEqual(response.getCode(), "Z")
+                        XCTAssertEqual(response.getCode(), "A");
                         XCTAssertEqual(response.getPolicy(), Conductrics.Policy.None)
                     }
                 }
@@ -221,4 +278,54 @@ class ConductricsTests: XCTestCase {
         })
         lock.wait()
     }
+
+    func testMetaData() throws {
+        let opts = Conductrics.RequestOptions(nil)
+            .setAllowedVariants("a-example", variants: ["A"])
+        let lock = Lock()
+        api.select(opts, "a-example", { response in
+            XCTAssertEqual(response.getAgent(), "a-example")
+            XCTAssertEqual(response.getPolicy(), Conductrics.Policy.Random)
+            XCTAssertEqual(response.getCode(), "A")
+            XCTAssertEqual(response.getMeta("magic"), "12345")
+            lock.signal()
+        })
+        lock.wait()
+    }
+
+    func testMetaDataNil() throws {
+        let opts = Conductrics.RequestOptions(nil)
+            .setAllowedVariants("a-example", variants: ["B"])
+        let lock = Lock()
+        api.select(opts, "a-example", { response in
+            XCTAssertEqual(response.getAgent(), "a-example")
+            XCTAssertEqual(response.getPolicy(), Conductrics.Policy.Random)
+            XCTAssertEqual(response.getCode(), "B")
+            XCTAssertEqual(response.getMeta("magic"), nil)
+            lock.signal()
+        })
+        lock.wait()
+    }
+
+    func testReuseOptions() throws {
+        let opts = Conductrics.RequestOptions(nil)
+            .setProvisional(true)
+        let lock = Lock()
+        api.select(opts, "a-example", { response in
+            XCTAssertEqual(response.getAgent(), "a-example")
+            XCTAssertEqual(response.getPolicy(), Conductrics.Policy.Random)
+            let variant = response.getCode()
+            XCTAssertEqual(response.getStatus(), Conductrics.Status.Provisional)
+            opts.setConfirm(true)
+            self.api.select(opts, "a-example", { response in
+                XCTAssertEqual(response.getAgent(), "a-example")
+                XCTAssertEqual(response.getPolicy(), Conductrics.Policy.Sticky)
+                XCTAssertEqual(response.getCode(), variant)
+                XCTAssertEqual(response.getStatus(), Conductrics.Status.Confirmed)
+            })
+            lock.signal()
+        })
+        lock.wait()
+    }
+
 }
