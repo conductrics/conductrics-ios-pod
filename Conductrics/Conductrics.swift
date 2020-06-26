@@ -37,6 +37,11 @@ public class Conductrics {
         case Unknown(message: String)
         case Offline
     }
+    public enum RewardError : Error {
+        case Offline
+        case InvalidGoal
+        case Unknown
+    }
 
     private var apiUrl : String;
     private var apiKey : String;
@@ -298,7 +303,7 @@ public class Conductrics {
             }
         }
         public func getReward( _ goalCode : String ) -> GoalResponse {
-            return rewards[goalCode] ?? GoalResponse(goalCode, parent: self);
+            return rewards[goalCode] ?? GoalResponse(goalCode, parent: self, error: nil);
         }
         public func getTraits() -> [String] {
             return traits;
@@ -429,13 +434,6 @@ public class Conductrics {
                 } else if( opts.getConfirm() ) {
                     command["s"] = "ok";
                 }
-                /*
-                if let forced = opts.getForcedOutcome(agent) {
-                    ret[agent] = SelectResponse(agent, forced, Policy.None, err: SelectError.Forced, parent:nil)
-                } else {
-                    commands.append(command)
-                }
-                */
                 commands.append(command)
             }
         }
@@ -458,10 +456,12 @@ public class Conductrics {
         private var accepted : [String:Double] = [String:Double]();
         private var jsonObject : [String:Any]?;
         private var parent : ExecResponse?;
-        public init( _ goalCode: String, parent: ExecResponse? ) {
+        private var error : Error?;
+        public init( _ goalCode: String, parent: ExecResponse?, error: Error? ) {
             self.parent = parent;
             self.goal = goalCode;
             self.jsonObject = nil;
+            setError(error);
         }
         public init( _ json: [String:Any], parent: ExecResponse? ) {
             self.parent = parent;
@@ -485,10 +485,12 @@ public class Conductrics {
         }
         public func getJSON() -> [String:Any]? { return jsonObject; }
         public func getExecResponse() -> ExecResponse? { return parent; }
+        public func setError(_ err : Error?) { self.error = err; }
+        public func getError() -> Error? { return self.error; }
     }
     public func reward( _ opts : RequestOptions, _ goalCode: String, value: Double, _ callback: @escaping (GoalResponse) -> Void ) {
         if opts.getOffline() {
-            callback(GoalResponse(goalCode, parent: nil));
+            callback(GoalResponse(goalCode, parent: nil, error: RewardError.Offline));
         } else {
             let commands : [[String:Any]] = [ ["g": goalCode, "v": 1.0] ];
             exec( opts, commands, { response in
