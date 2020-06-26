@@ -501,4 +501,11 @@ public class Conductrics {
     public func reward( _ opts : RequestOptions, _ goalCode: String, _ callback: @escaping (GoalResponse) -> Void ) {
         self.reward(opts, goalCode, value: 1.0, callback);
     }
+    let emptyCallback : (GoalResponse)->Void = { response in };
+    public func reward( _ opts : RequestOptions, _ goalCode: String) {
+        self.reward(opts, goalCode, value: 1.0, emptyCallback);
+    }
+    public func reward( _ opts : RequestOptions, _ goalCode: String, value: Double) {
+        self.reward(opts, goalCode, value: value, emptyCallback);
+    }
 }
