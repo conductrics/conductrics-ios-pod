@@ -16,7 +16,7 @@ Pod::Spec.new do |spec|
   #
 
   spec.name         = "Conductrics"
-  spec.version      = "0.0.1"
+  spec.version      = "0.0.2"
   spec.summary      = "HTTP API Wrapper for the Conductrics API."
 	spec.swift_version = "5.0"
 
