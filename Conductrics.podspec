@@ -16,7 +16,7 @@ Pod::Spec.new do |spec|
   #
 
   spec.name         = "Conductrics"
-  spec.version      = "0.0.2"
+  spec.version = "0.0.3"
   spec.summary      = "HTTP API Wrapper for the Conductrics API."
 	spec.swift_version = "5.0"
 
@@ -85,7 +85,7 @@ Pod::Spec.new do |spec|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  spec.source       = { :git => "https://github.com/conductrics/conductrics-ios-pod.git", :tag => "pod-release-0.0.2" }
+  spec.source       = { :git => "https://github.com/conductrics/conductrics-ios-pod.git", :tag => "pod-release-0.0.3" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
